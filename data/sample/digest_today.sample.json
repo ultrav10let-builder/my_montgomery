@@ -1,0 +1,14 @@
+[
+  {
+    "title": "Sample City Council Meeting",
+    "content": "Sample discussion on city park improvements.",
+    "source": "City Clerk",
+    "url": "https://www.montgomeryal.gov"
+  },
+  {
+    "title": "Sample Road Closure",
+    "content": "Sample notice for utility repairs on Madison Ave.",
+    "source": "Dept of Engineering",
+    "url": "https://www.montgomeryal.gov"
+  }
+]

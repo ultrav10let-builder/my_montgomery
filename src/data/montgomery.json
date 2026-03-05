@@ -1,0 +1,29 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": { "name": "West Montgomery", "signalScore": 85 },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[-86.35, 32.35], [-86.32, 32.35], [-86.32, 32.38], [-86.35, 32.38], [-86.35, 32.35]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "Downtown", "signalScore": 45 },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[-86.32, 32.36], [-86.29, 32.36], [-86.29, 32.39], [-86.32, 32.39], [-86.32, 32.36]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "EastChase", "signalScore": 30 },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[-86.20, 32.34], [-86.15, 32.34], [-86.15, 32.38], [-86.20, 32.38], [-86.20, 32.34]]]
+      }
+    }
+  ]
+}

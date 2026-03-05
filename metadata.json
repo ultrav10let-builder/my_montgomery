@@ -1,0 +1,5 @@
+{
+  "name": "My❤️Montgomery",
+  "description": "A civic transparency platform for Montgomery, providing insights into city data, resource allocation, and public announcements.",
+  "requestFramePermissions": ["geolocation"]
+}
