@@ -12,43 +12,45 @@ Key design principles:
 ```
 User
  ↓
-React Web App
+React Web App (Vite)
  ↓
-Node.js API
+Node.js API (Express)
  ↓
 Data Connectors
-    ├ Open Data Portal
-    ├ Bright Data Scraping
+    ├ Montgomery Open Data Portal (ArcGIS Hub)
+    ├ Bright Data Scraping Browser (Playwright)
  ↓
-Trend Engine
+Trend Engine (historical queries)
  ↓
-Google Gemini (AI Studio API)
+AI Summarization (OpenAI or Google Gemini)
  ↓
-JSON Cache
+SQLite + JSON fallback
 ```
 
 ## Data Flow
 
 ### Structured Data
-**Open Data Portal → API → Cache → Frontend**
-- Examples: 311 requests, code violations, infrastructure signals.
+**Open Data Portal → ingestService → SQLite → API → Frontend**
+- Examples: 311 requests, code violations, zoning cases, capital projects, business licenses, parks, council districts.
 
 ### Unstructured Data
-**Bright Data → API → Gemini AI → Civic Digest → Frontend**
-- Sources: city announcements, council agendas, zoning hearings, development notices.
+**Bright Data Scraping Browser → digestService → AI Summarizer → SQLite digests → Frontend**
+- Sources: city news, council, planning, parks, public safety pages.
 
 ## AI Integration
-Gemini models are accessed through the **Google AI Studio API**.
-- **Typical models used**: `gemini-3-flash`
-- **Tasks performed**: summarization, signal explanation, trend interpretation.
+Supports **OpenAI** or **Google Gemini**.
+- **OpenAI** (when `OPENAI_API_KEY` set): `gpt-5-mini` by default, overridable with `OPENAI_MODEL`
+- **Gemini** (when `GEMINI_API_KEY` set): `gemini-1.5-flash`
+- **Tasks**: summarization, signal explanation, trend interpretation.
 
 ## Storage Model
-Minimal persistent storage.
-- **Primary**: `data/latest_signals.json`, `data/digest_today.json`
-- **Purpose**: reduce API calls, maintain rebuild reliability, support offline demo.
+- **Primary**: SQLite (`data/cache.sqlite`)
+- **Tables**: `snapshots`, `signals`, `sources`, `digests`
+- **Purpose**: persist ingested data, historical queries, digests.
+- **JSON**: Optional fallback/sample files for demo; not primary storage.
 
 ## Security Model
-Secrets stored in `.env`:
-- `BRIGHTDATA_API_KEY`
-- `GEMINI_API_KEY`
-*Never exposed to the frontend.*
+Secrets in `.env` (never exposed to frontend):
+- `BRIGHTDATA_BROWSER_WSS` — Bright Data Scraping Browser WebSocket URL (for digest scraping)
+- `GEMINI_API_KEY` — Google AI Studio
+- `OPENAI_API_KEY` — OpenAI (optional alternative)

@@ -10,7 +10,7 @@ export interface ArcGISItem {
 export async function resolveHubItem(hubUrl: string): Promise<ArcGISItem | null> {
   try {
     // Extract ID from URL (e.g., /apps/e5004d18034e41e192e89e03601d4c17)
-    const match = hubUrl.match(/\/(apps|maps|documents|datasets)\/([a-f0-9]{32})/);
+    const match = hubUrl.match(/\/(apps|maps|documents|datasets|content)\/([a-f0-9]{32})/);
     if (!match) return null;
 
     const itemId = match[2];

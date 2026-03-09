@@ -10,6 +10,27 @@ export default defineConfig(({mode}) => {
     define: {
       'process.env.GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY),
     },
+    build: {
+      rollupOptions: {
+        output: {
+          manualChunks(id) {
+            const normalizedId = id.replaceAll('\\', '/');
+            if (!normalizedId.includes('node_modules')) return undefined;
+            if (normalizedId.includes('react-leaflet') || normalizedId.includes('/leaflet/')) return 'map-vendor';
+            if (normalizedId.includes('/lucide-react/')) return 'icons-vendor';
+            if (normalizedId.includes('/date-fns/') || normalizedId.includes('/date-fns-tz/')) return 'date-vendor';
+            if (
+              normalizedId.includes('/react/')
+              || normalizedId.includes('/react-dom/')
+              || normalizedId.includes('/scheduler/')
+            ) {
+              return 'react-vendor';
+            }
+            return 'vendor';
+          },
+        },
+      },
+    },
     resolve: {
       alias: {
         '@': path.resolve(__dirname, '.'),
@@ -17,8 +38,11 @@ export default defineConfig(({mode}) => {
     },
     server: {
       // HMR is disabled in AI Studio via DISABLE_HMR env var.
-      // Do not modifyâfile watching is disabled to prevent flickering during agent edits.
       hmr: process.env.DISABLE_HMR !== 'true',
+      // Proxy /api to backend when running `npx vite` separately (frontend on 5173, backend on 5174)
+      proxy: {
+        '/api': { target: `http://localhost:${env.PORT || '8080'}`, changeOrigin: true },
+      },
     },
   };
 });

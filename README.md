@@ -7,7 +7,7 @@ My❤️Montgomery is a civic intelligence platform that transforms municipal da
 The platform combines:
 - official open civic datasets
 - Bright Data live scraping
-- AI summarization via Google Gemini (Google AI Studio)
+- AI summarization via OpenAI or Google Gemini
 - geographic visualization
 
 to make civic activity understandable in real time.
@@ -28,17 +28,17 @@ Instant overview of civic activity.
 - **Displays**: 311 service requests, weekly trend changes, most active service categories, highest-demand neighborhoods.
 
 ### Interactive Civic Map
-Leaflet-powered map visualizing resource demand by neighborhood.
-- **Metrics**: signals per 10,000 residents.
-- **Layers**: 311 requests, code violations, civic announcements, infrastructure signals.
+Leaflet-powered map visualizing civic signals across Montgomery districts.
+- **Views**: District pressure/calls visualization plus a `resources` mode.
+- **Context metrics**: Citywide signals per 10,000 residents are shown in snapshot/trend summaries, and district insight adds an approximate district per-10k view until district census splits are added.
+- **Layers**: Category filter (All, Infrastructure, Sanitation, Public Safety). Future: distinct data layers.
 - **Future layers**: police calls, fire incidents, EMS demand.
 
-### Neighborhood Insight Panel
-Clicking a region reveals:
-- signals per capita
-- difference from city baseline
-- dominant issue category
-- weekly trend change
+### District Insight Panel
+Implemented district-scoped insight panel with current scoped signals, approximate per-10k context, citywide baseline comparison, dominant issue, prior-window trend context, and leading neighborhood activity. The panel stays mounted with a neutral placeholder until a district is selected.
+
+### City Pulse
+Data-backed district pressure highlights derived from the current district breakdown, with top issue context for the highest-pressure districts in the current scope.
 
 ### Today in Montgomery
 Daily AI-generated civic digest summarizing:
@@ -47,12 +47,12 @@ Daily AI-generated civic digest summarizing:
 - development notices
 - city announcements
 
-Summaries are produced using Google Gemini models via Google AI Studio.
+Summaries are produced using OpenAI (default: `gpt-5-mini`) or Google Gemini. Configure one or both in `.env`.
 
 ## Technology Stack
 - **Frontend**: React, Vite, Leaflet
-- **Backend**: Node.js, Express, Zod, Helmet
-- **AI**: Google Gemini, Google AI Studio, GenAI SDK
+- **Backend**: Node.js, Express, Helmet
+- **AI**: OpenAI or Google Gemini (GenAI SDK)
 - **Data Collection**: Bright Data, Montgomery Open Data Portal
 
 ## Architecture Overview
@@ -67,9 +67,9 @@ Open Data + Bright Data
  ↓
 Trend Engine
  ↓
-Gemini AI Summarization
+AI Summarization (OpenAI or Gemini)
  ↓
-JSON Cache
+SQLite
 ```
 
 ## Running Locally
@@ -87,12 +87,65 @@ JSON Cache
 
 3. **Create environment file** (`.env`)
    ```env
-   PORT=3000
-   BRIGHTDATA_BROWSER_WSS=wss://brd-customer-hl_...:9222
-   ADMIN_TOKEN=your-secret-token
+   PORT=8080
+   NODE_ENV=development
+   ADMIN_TOKEN=your-secret-admin-token
+
+   # Database (default: SQLite)
+   DB_MODE=sqlite
+   SQLITE_PATH=./data/cache.sqlite
+
+   # Optional: for full features
+   AI_PROVIDER=openai
+   OPENAI_API_KEY=
+   OPENAI_MODEL=gpt-5-mini
    GEMINI_API_KEY=
+   BRIGHTDATA_BROWSER_WSS=   # Bright Data Scraping Browser – for digest scraping
    ```
-   *Gemini API keys are generated in Google AI Studio. `BRIGHTDATA_BROWSER_WSS` is obtained from the Bright Data Scraping Browser proxy settings.*
+   *Use one or both AI keys. If your OpenAI account is restricted to a mini model, keep `OPENAI_MODEL=gpt-5-mini`. `GEMINI_API_KEY` comes from [Google AI Studio](https://aistudio.google.com). `BRIGHTDATA_BROWSER_WSS` comes from Bright Data Browser API zone Overview → Access details.*
+
+4. **Start the app**
+   ```bash
+   npm run dev
+   ```
+   Open **http://localhost:8080** in your browser.
+
+   **AI Insight mode:** At startup the server logs whether it is in *live mode* (key present) or *fallback mode* (no key). To verify the API key works, call `http://localhost:8080/api/ai/status` and `http://localhost:8080/api/ai/verify`. The status response now includes the active provider and `OPENAI_MODEL` value.
+
+## Testing Historical Queries
+
+The API supports date range and trend endpoints. All dates use **America/Chicago** for local boundaries; data is stored in UTC.
+
+**Signals by date range:**
+```bash
+curl "http://localhost:8080/api/signals?start=2025-02-01&end=2025-03-05"
+# Optional: &category=Infrastructure&neighborhood=Downtown
+```
+
+**Trends (last 7 days vs prior 7 days):**
+```bash
+curl "http://localhost:8080/api/trends?window=7d"
+# Or: window=30d
+```
+
+**Digest for a specific date:**
+```bash
+curl "http://localhost:8080/api/digest?date=2025-03-05"
+```
+
+**Latest signals (most recent 100):**
+```bash
+curl "http://localhost:8080/api/signals/latest"
+```
+
+## Time Control Bar
+
+- **Live** – Most recent signals
+- **7d / 30d** – Last 7 or 30 days by `event_at_utc`
+- **Custom** – Date range picker
+- **Compare to previous period** – Toggle to show % change vs prior equal window
+
+See `docs/TIME_NORMALIZATION.md` for event time parsing and confidence levels.
 
 ## Admin Operations
 
@@ -108,6 +161,11 @@ To refresh the daily digest manually:
 
 ## Civic Impact
 This project demonstrates how AI and civic data can increase transparency by making public information accessible, understandable, and actionable.
+
+## Feature Roadmap
+- See `docs/HACKATHON_FEATURE_ROADMAP.md` for the hackathon-ready roadmap covering:
+  - **Live Civic Timeline Engine**
+  - **Compare to Previous Period / Montgomery Momentum Compare**
 
 ## License
 MIT

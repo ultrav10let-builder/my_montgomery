@@ -1,0 +1,77 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": { "name": "District 1", "district": 1 },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[-86.35, 32.38], [-86.27, 32.38], [-86.27, 32.42], [-86.35, 32.42], [-86.35, 32.38]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "District 2", "district": 2 },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[-86.27, 32.38], [-86.19, 32.38], [-86.19, 32.42], [-86.27, 32.42], [-86.27, 32.38]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "District 3", "district": 3 },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[-86.19, 32.38], [-86.10, 32.38], [-86.10, 32.42], [-86.19, 32.42], [-86.19, 32.38]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "District 4", "district": 4 },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[-86.35, 32.34], [-86.27, 32.34], [-86.27, 32.38], [-86.35, 32.38], [-86.35, 32.34]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "District 5", "district": 5 },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[-86.27, 32.34], [-86.19, 32.34], [-86.19, 32.38], [-86.27, 32.38], [-86.27, 32.34]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "District 6", "district": 6 },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[-86.19, 32.34], [-86.10, 32.34], [-86.10, 32.38], [-86.19, 32.38], [-86.19, 32.34]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "District 7", "district": 7 },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[-86.35, 32.30], [-86.27, 32.30], [-86.27, 32.34], [-86.35, 32.34], [-86.35, 32.30]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "District 8", "district": 8 },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[-86.27, 32.30], [-86.19, 32.30], [-86.19, 32.34], [-86.27, 32.34], [-86.27, 32.30]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "District 9", "district": 9 },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[-86.19, 32.30], [-86.10, 32.30], [-86.10, 32.34], [-86.19, 32.34], [-86.19, 32.30]]]
+      }
+    }
+  ]
+}

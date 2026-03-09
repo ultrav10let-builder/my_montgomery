@@ -1,67 +1,152 @@
 import React from 'react';
-import { format } from 'date-fns';
-import { clsx, type ClassValue } from 'clsx';
-import { twMerge } from 'tailwind-merge';
+import type { CivicSignal, TrendResponse } from '../types';
+import { getCategoryColor } from '../utils/categoryColors';
+import { getCategoryIcon } from '../utils/mapIcons';
+import { getAIInsightStatusDisplay, type AIInsightStatus, type AIInsightStatusTone } from '../utils/aiInsightStatus';
+import {
+  buildComparisonMovers,
+  buildCurrentCategoryMix,
+  formatComparisonValue,
+  formatCurrentMixValue,
+  getComparisonSummary,
+  getCurrentMixSummary,
+} from '../utils/trendInsights';
 
-function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs));
+interface TrendInsightsProps {
+  trends: TrendResponse | null;
+  showComparison?: boolean;
+  /** Display window for "Data window: X → Y" */
+  dataWindowStart?: string;
+  dataWindowEnd?: string;
+  aiInsightStatus?: AIInsightStatus | null;
+  scopeSignals?: CivicSignal[];
+  previousScopeSignals?: CivicSignal[];
+  scopeLabel?: string;
 }
 
-export function TrendInsights() {
+function getAIStatusClasses(tone: AIInsightStatusTone): string {
+  if (tone === 'live') return 'border-emerald-400/30 bg-emerald-500/15 text-emerald-300';
+  if (tone === 'cached') return 'border-sky-400/30 bg-sky-500/15 text-sky-300';
+  if (tone === 'fallback') return 'border-amber-400/30 bg-amber-500/15 text-amber-200';
+  if (tone === 'unavailable') return 'border-rose-400/30 bg-rose-500/15 text-rose-200';
+  return 'border-slate-500/30 bg-slate-800 text-slate-200';
+}
+
+export function TrendInsights({
+  trends,
+  showComparison,
+  dataWindowStart,
+  dataWindowEnd,
+  aiInsightStatus,
+  scopeSignals = [],
+  previousScopeSignals = [],
+  scopeLabel,
+}: TrendInsightsProps) {
+  const useComparison = Boolean(showComparison);
+  const movers = useComparison ? buildComparisonMovers(scopeSignals, previousScopeSignals) : (trends?.categoryMovers ?? []);
+  const currentMix = buildCurrentCategoryMix(scopeSignals);
+  const displayMovers = movers.slice(0, 6);
+  const displayMix = currentMix.slice(0, 6);
+  const summary = useComparison
+    ? getComparisonSummary(displayMovers)
+    : getCurrentMixSummary(displayMix, scopeSignals.length);
+  const aiStatus = getAIInsightStatusDisplay(aiInsightStatus);
+  const displayItems = useComparison
+    ? displayMovers.map((m) => ({
+        category: m.category,
+        detail: `${m.previous}→${m.current} signals`,
+        value: formatComparisonValue(m),
+        color: getCategoryColor(m.category),
+        icon: getCategoryIcon(m.category, ''),
+      }))
+    : displayMix.map((item) => ({
+        category: item.category,
+        detail: `${item.current} signals`,
+        value: formatCurrentMixValue(item),
+        color: getCategoryColor(item.category),
+        icon: getCategoryIcon(item.category, ''),
+      }));
+  const scopeText = useComparison
+    ? `Scope · ${scopeLabel ?? 'Current dashboard scope'} · vs prior matched window`
+    : `Scope · ${scopeLabel ?? 'Current dashboard scope'}`;
+
   return (
-    <section className="lg:col-span-4 grid grid-cols-1 md:grid-cols-3 gap-6">
-      <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-        <h3 className="text-sm font-bold uppercase tracking-wider text-slate-400 mb-4">Trend Engine</h3>
-        <div className="space-y-4">
-          <TrendItem label="Infrastructure" value="+12%" up />
-          <TrendItem label="Sanitation" value="-4%" />
-          <TrendItem label="Public Safety" value="+8%" up />
+    <section className="flex flex-col gap-3 w-full" aria-label="Trend engine and data transparency">
+      <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col">
+        <h3 className="text-[10px] font-bold uppercase tracking-wider text-slate-600 mb-2">
+          {useComparison ? 'Trend Engine (vs prior)' : 'Current Activity Mix'}
+        </h3>
+        <p className="text-[10px] uppercase tracking-wide text-slate-400 mb-2">
+          {scopeText}
+        </p>
+        <p className="text-xs text-slate-700 mb-2 leading-snug">{summary}</p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+          {displayItems.length > 0 ? (
+            displayItems.map((item) => (
+              <React.Fragment key={item.category}>
+                <TrendItem
+                  label={item.category}
+                  icon={item.icon}
+                  value={item.value}
+                  detail={item.detail}
+                  categoryColor={item.color}
+                />
+              </React.Fragment>
+            ))
+          ) : (
+            <>
+              <TrendItem label="Infrastructure" icon="🚧" value="—" categoryColor="#3b82f6" />
+              <TrendItem label="Sanitation" icon="🗑️" value="—" categoryColor="#22c55e" />
+              <TrendItem label="Public Safety" icon="🛡️" value="—" categoryColor="#ef4444" />
+            </>
+          )}
         </div>
       </div>
-      <div className="md:col-span-2 bg-slate-900 text-white p-6 rounded-2xl shadow-sm relative overflow-hidden">
-        <div className="relative z-10">
-          <h3 className="text-sm font-bold uppercase tracking-wider text-slate-400 mb-2">Data Transparency</h3>
-          <p className="text-lg font-medium mb-4">This platform uses live signals from the Montgomery Open Data Portal and Bright Data scraping services.</p>
-          <div className="flex gap-6 text-xs font-mono text-slate-400">
-            <div>
-              <p className="uppercase mb-1">Source</p>
-              <p className="text-white">OpenData Montgomery</p>
-            </div>
-            <div>
-              <p className="uppercase mb-1">Type</p>
-              <p className="text-white">GeoJSON / REST API</p>
-            </div>
-            <div>
-              <p className="uppercase mb-1">Last Sync</p>
-              <p className="text-white">{format(new Date(), 'MMM d, HH:mm')}</p>
-            </div>
-          </div>
-        </div>
-        <div className="absolute top-0 right-0 w-64 h-64 bg-civic-red/10 rounded-full blur-3xl -mr-32 -mt-32" />
+      <div className="flex-shrink-0 bg-slate-900 text-white px-4 py-2.5 rounded-xl flex flex-wrap items-center gap-x-4 gap-y-1 text-[10px] font-mono">
+        <span className="text-slate-300 uppercase font-semibold">Data Transparency</span>
+        <span className="text-slate-300">OpenData Montgomery · GeoJSON</span>
+        <span className="text-slate-300">Map shows only records with clear coordinates.</span>
+        <span className={`rounded-full border px-2 py-0.5 font-semibold tracking-wide ${getAIStatusClasses(aiStatus.tone)}`}>
+          {aiStatus.label}
+        </span>
+        {(dataWindowStart || dataWindowEnd) && (
+          <span className="text-slate-300">
+            Window: {dataWindowStart ?? '—'} → {dataWindowEnd ?? '—'}
+          </span>
+        )}
+        <span className="text-slate-400">America/Chicago</span>
+        {useComparison && trends?.confidenceBreakdown?.windowA && (
+          <span className="text-slate-400 ml-auto">
+            {trends.confidenceBreakdown.windowA.map((c) => `${c.confidence}:${c.count}`).join(', ')}
+          </span>
+        )}
       </div>
     </section>
   );
 }
 
-function TrendItem({ label, value, up }: { label: string, value: string, up?: boolean }) {
+function TrendItem({
+  label,
+  icon,
+  value,
+  detail,
+  categoryColor = '#64748b',
+}: {
+  label: string;
+  icon?: string;
+  value: string;
+  detail?: string;
+  categoryColor?: string;
+}) {
   return (
-    <div className="flex items-center justify-between">
-      <span className="text-sm font-medium text-slate-600">{label}</span>
-      <div className="flex items-center gap-2">
-        <div className={cn(
-          "h-1.5 w-12 rounded-full",
-          up ? "bg-emerald-100" : "bg-slate-100"
-        )}>
-          <div className={cn(
-            "h-full rounded-full",
-            up ? "bg-emerald-500 w-3/4" : "bg-slate-400 w-1/2"
-          )} />
-        </div>
-        <span className={cn(
-          "text-xs font-bold",
-          up ? "text-emerald-600" : "text-slate-500"
-        )}>{value}</span>
-      </div>
+    <div className="flex items-center gap-1.5 min-w-0 rounded-lg border border-slate-200/80 bg-white/90 px-2.5 py-1.5 shadow-md">
+      {icon && <span className="text-sm leading-none" aria-hidden>{icon}</span>}
+      <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: categoryColor }} aria-hidden />
+      <span className="text-xs font-medium text-slate-600 truncate">{label}</span>
+      {detail && <span className="text-[10px] text-slate-500 shrink-0">{detail}</span>}
+      <span className="ml-auto text-[10px] font-bold shrink-0" style={{ color: value === '—' ? '#94a3b8' : categoryColor }}>
+        {value}
+      </span>
     </div>
   );
 }

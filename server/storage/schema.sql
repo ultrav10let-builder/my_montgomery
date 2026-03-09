@@ -54,3 +54,54 @@ CREATE TABLE IF NOT EXISTS digests (
 
 -- Indexes for digests
 CREATE INDEX IF NOT EXISTS idx_digests_event_at ON digests(event_at_utc);
+
+-- Digest Items Table (Phase 2: structured, category-aware records from Bright Data digest)
+CREATE TABLE IF NOT EXISTS digest_items (
+    id TEXT PRIMARY KEY,
+    digest_date TEXT NOT NULL,
+    title TEXT NOT NULL,
+    summary TEXT NOT NULL,
+    category TEXT NOT NULL,
+    source_name TEXT NOT NULL,
+    source_url TEXT,
+    event_at_utc TEXT,
+    ingested_at_utc TEXT NOT NULL,
+    location_text TEXT,
+    city TEXT,
+    raw_json TEXT,
+    created_at_utc TEXT NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_digest_items_digest_date ON digest_items(digest_date);
+CREATE INDEX IF NOT EXISTS idx_digest_items_category ON digest_items(category);
+CREATE INDEX IF NOT EXISTS idx_digest_items_ingested ON digest_items(ingested_at_utc);
+
+-- Traffic Feeds Table (Bright Data scraped live traffic)
+CREATE TABLE IF NOT EXISTS traffic_feeds (
+    id TEXT PRIMARY KEY,
+    source_url TEXT NOT NULL,
+    source_label TEXT NOT NULL,
+    road TEXT,
+    direction TEXT,
+    description TEXT NOT NULL,
+    severity TEXT,
+    latitude REAL,
+    longitude REAL,
+    raw_json TEXT,
+    ingested_at_utc TEXT NOT NULL,
+    created_at_utc TEXT NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_traffic_feeds_ingested ON traffic_feeds(ingested_at_utc);
+
+-- Insights cache (Phase 4 – cost control, regenerate every 10 minutes)
+CREATE TABLE IF NOT EXISTS insights_cache (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    time_window TEXT NOT NULL,
+    generated_at TEXT NOT NULL,
+    insight TEXT NOT NULL,
+    provider TEXT DEFAULT 'fallback',
+    UNIQUE(time_window)
+);
+
+CREATE INDEX IF NOT EXISTS idx_insights_cache_generated ON insights_cache(generated_at);

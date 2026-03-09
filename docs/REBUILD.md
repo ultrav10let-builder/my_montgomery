@@ -26,22 +26,21 @@ npm install
 ## Step 4 — Configure Environment Variables
 Create a `.env` file:
 ```env
-PORT=3001
-BRIGHTDATA_API_KEY=
+PORT=8080
+BRIGHTDATA_BROWSER_WSS=
+OPENAI_API_KEY=
 GEMINI_API_KEY=
 ```
+*Use PORT=8080 (Chrome blocks 6000; 8080 is universally safe). Use OPENAI_API_KEY or GEMINI_API_KEY for AI summaries.*
 
-## Step 5 — Start Backend
+## Step 5 — Start the App
 ```bash
 npm run dev
 ```
-*Expected output: API running on localhost:3001*
+*One command starts both API and frontend. Expected output: `Server running on http://localhost:8080`*
 
-## Step 6 — Start Frontend
-```bash
-npm run dev
-```
-*Open: http://localhost:5173*
+## Step 6 — Open in Browser
+**Open: http://localhost:8080**
 
 ## Step 7 — Refresh Data
 Trigger data refresh:
